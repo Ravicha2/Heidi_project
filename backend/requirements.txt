@@ -1,0 +1,15 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+inngest==0.2.7
+minio==7.2.3
+python-multipart==0.0.6
+pydantic==2.5.3
+starlette
+anyio
+httpx
+openai==1.10.0
+langchain==0.1.4
+langchain-openai==0.0.5
+langchain-core==0.1.16
+langgraph==0.0.21
+python-dotenv==1.0.1
