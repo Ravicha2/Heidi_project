@@ -18,9 +18,10 @@ function App() {
             const { data } = await axios.get(`${API_URL}/api/voicemails`)
             return data
         },
-        refetchInterval: (data) => {
+        refetchInterval: (query) => {
             // Poll every 2s if any item is PROCESSING
-            if (data?.some(item => item.status === 'PROCESSING')) return 2000
+            const data = query.state.data
+            if (Array.isArray(data) && data.some(item => item.status === 'PROCESSING')) return 2000
             return false
         }
     })

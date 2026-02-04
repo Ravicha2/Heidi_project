@@ -36,7 +36,7 @@ class IntelligenceService:
                 "transcript": transcript,
                 "format_instructions": self.parser.get_format_instructions()
             })
-            return {"extraction": result.dict()}
+            return {"extraction": result.model_dump()}
         except Exception as e:
             # Fallback for error
             return {"extraction": {
