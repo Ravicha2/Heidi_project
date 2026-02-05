@@ -47,7 +47,7 @@ services:
     environment:
       INNGEST_DEV: "1"
       INNGEST_EVENT_KEY: "local"
-    command: ["inngest-cli", "dev", "--bind", "0.0.0.0"]
+    command: ["inngest", "dev", "-u", "http://voicemail_backend:8000/api/inngest"]
 
   # ---------------------------------------------------------------------------
   # Service: Backend (FastAPI)

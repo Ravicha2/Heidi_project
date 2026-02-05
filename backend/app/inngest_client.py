@@ -25,7 +25,9 @@ minio_client = Minio(
     fn_id="process_voicemail",
     trigger=inngest.TriggerEvent(event="voicemail/received"),
 )
-async def process_voicemail(ctx: inngest.Context, step: inngest.Step):
+async def process_voicemail(ctx, step=None):
+    if step is None and hasattr(ctx, "step"):
+        step = ctx.step
     """
     Durable workflow:
     1. Download audio from MinIO
