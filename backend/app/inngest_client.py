@@ -10,7 +10,7 @@ from app.db.storage import db
 # Define Client
 inngest_client = inngest.Inngest(
     app_id="voicemail-app",
-    is_production=False,
+    is_production=settings.INNGEST_DEV != "1",
 )
 
 # MinIO Client (for downloading during processing)
@@ -18,7 +18,7 @@ minio_client = Minio(
     settings.MINIO_ENDPOINT,
     access_key=settings.MINIO_ACCESS_KEY,
     secret_key=settings.MINIO_SECRET_KEY,
-    secure=False
+    secure=settings.MINIO_USE_SSL
 )
 
 @inngest_client.create_function(
