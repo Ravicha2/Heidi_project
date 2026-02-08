@@ -1,5 +1,6 @@
 
 import { X, Calendar, Stethoscope, AlertTriangle, User, Play, FileText, Monitor, Activity } from 'lucide-react'
+import { InlineWidget } from 'react-calendly'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -164,6 +165,23 @@ export function VoicemailDetail({ vm, onClose, className }) {
                 <p className="text-lg leading-relaxed text-brand-plum bg-white/40 p-6 rounded-lg border border-brand-brown/10">
                     {highlightText(vm.transcript)}
                 </p>
+            </div>
+            {/* Scheduling Section */}
+            <div className="mt-8 border-t border-brand-brown/10 pt-8">
+                <h3 className="text-brand-brown uppercase text-xs font-bold tracking-wider mb-4">
+                    Next Steps
+                </h3>
+
+                <div className="h-[650px] bg-white/50 rounded-lg overflow-hidden border border-brand-brown/10">
+                    <InlineWidget
+                        url={analysis.booking_url || import.meta.env.VITE_CALENDLY_URL || "https://calendly.com"}
+                        styles={{ height: '100%' }}
+                        prefill={{
+                            name: analysis.patient_name,
+                            email: "patient@example.com",
+                        }}
+                    />
+                </div>
             </div>
         </div>
     )

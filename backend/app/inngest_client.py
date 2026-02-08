@@ -58,10 +58,15 @@ async def process_voicemail(ctx, step=None):
 
     transcript = await step.run("transcribe_audio", run_transcription)
     
-    # --- Step 2: Analyze with LangGraph ---
     analysis = await step.run("analyze_intent_urgency", lambda: intelligence_service.analyze_transcript(transcript))
     
-    # --- Step 3: Update Database ---
+    # --- Step 3: Determine Booking URL ---
+    from app.services.calendly import calendly_service
+    
+    treatment_mode = analysis.get("treatment_mode", "Telehealth")
+    booking_url = calendly_service.get_base_url(treatment_mode)
+    
+    # --- Step 4: Update Database ---
     async def update_state():
         # Flatten analysis for simpler DB structure or keep nested
         db.update_voicemail(file_id, {
@@ -69,7 +74,10 @@ async def process_voicemail(ctx, step=None):
             "status": "COMPLETED",
             "urgency": analysis.get("urgency", "GREEN"),
             "category": analysis.get("intent", "Unknown"),
-            "analysis": analysis # Store full object including name, mode etc.
+            "analysis": {
+                **analysis,
+                "booking_url": booking_url # Context-aware URL
+            }
         })
         return "Updated"
 
