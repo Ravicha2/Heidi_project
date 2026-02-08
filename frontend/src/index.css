@@ -7,10 +7,13 @@
 }
 
 body {
-  @apply bg-slate-900 text-white min-h-screen;
-  background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+  @apply bg-brand-cream text-brand-gray min-h-screen selection:bg-brand-yellow selection:text-brand-plum;
 }
 
 .glass-panel {
-  @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl rounded-xl;
+  @apply bg-white/40 backdrop-blur-md border border-white/60 shadow-xl rounded-xl;
+}
+
+.btn-primary {
+  @apply bg-brand-yellow text-brand-plum font-bold shadow-lg hover:bg-brand-banner transition-transform active:scale-95;
 }

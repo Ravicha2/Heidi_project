@@ -3,10 +3,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { Mic, Square, Play, AlertTriangle, CheckCircle, Clock, Activity, Loader2 } from 'lucide-react'
 import clsx from 'clsx'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Navbar } from './components/Navbar'
+import { Dashboard } from './components/Dashboard'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 function App() {
+    return (
+        <Router>
+            <div className="min-h-screen p-4 md:p-8 max-w-[1600px] mx-auto w-full">
+                <Navbar />
+                <Routes>
+                    <Route path="/" element={<RecordingView />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                </Routes>
+            </div>
+        </Router>
+    )
+}
+
+function RecordingView() {
     const [isRecording, setIsRecording] = useState(false)
     const mediaRecorderRef = useRef(null)
     const chunksRef = useRef([])
@@ -19,7 +36,6 @@ function App() {
             return data
         },
         refetchInterval: (query) => {
-            // Poll every 2s if any item is PROCESSING
             const data = query.state.data
             if (Array.isArray(data) && data.some(item => item.status === 'PROCESSING')) return 2000
             return false
@@ -69,12 +85,12 @@ function App() {
     }
 
     return (
-        <div className="min-h-screen p-8 max-w-4xl mx-auto">
+        <div>
             <header className="mb-12 text-center">
-                <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
+                <h1 className="text-4xl font-bold text-brand-plum mb-2">
                     Intelligent Voicemail
                 </h1>
-                <p className="text-slate-400">Event-Driven Triage System</p>
+                <p className="text-brand-brown">Event-Driven Triage System</p>
             </header>
 
             {/* Recording Section */}
@@ -84,17 +100,17 @@ function App() {
                     className={clsx(
                         "relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl border-4",
                         isRecording
-                            ? "bg-red-500/20 border-red-500 animate-pulse"
-                            : "bg-blue-500/20 border-blue-500 hover:bg-blue-500/30 hover:scale-105"
+                            ? "bg-red-100 border-red-500 animate-pulse"
+                            : "bg-brand-yellow/20 border-brand-yellow hover:bg-brand-yellow/40 hover:scale-105"
                     )}
                 >
                     {isRecording ? (
                         <Square className="w-8 h-8 text-red-500 fill-current" />
                     ) : (
-                        <Mic className="w-10 h-10 text-blue-400" />
+                        <Mic className="w-10 h-10 text-brand-plum" />
                     )}
                     {isRecording && (
-                        <span className="absolute -bottom-10 text-red-400 font-mono text-sm animate-pulse">
+                        <span className="absolute -bottom-10 text-red-500 font-mono text-sm animate-pulse font-bold">
                             RECORDING...
                         </span>
                     )}
@@ -104,15 +120,10 @@ function App() {
             {/* List Section */}
             <div className="grid gap-4">
                 {isLoading ? (
-                    <div className="text-center text-slate-500">Loading voicemails...</div>
+                    <div className="text-center text-brand-brown">Loading voicemails...</div>
                 ) : voicemails?.map((vm) => (
                     <VoicemailCard key={vm.id} vm={vm} />
                 ))}
-                {voicemails?.length === 0 && (
-                    <div className="text-center text-slate-600 py-12 glass-panel">
-                        No voicemails yet. Record one to test the pipeline.
-                    </div>
-                )}
             </div>
         </div>
     )
@@ -122,30 +133,33 @@ function VoicemailCard({ vm }) {
     const isProcessing = vm.status === 'PROCESSING'
 
     const statusColors = {
-        RED: "border-l-red-500 bg-red-950/20",
-        YELLOW: "border-l-yellow-500 bg-yellow-950/20",
-        GREEN: "border-l-green-500 bg-green-950/20",
+        RED: "border-l-red-500 bg-white",
+        YELLOW: "border-l-yellow-500 bg-white",
+        GREEN: "border-l-green-500 bg-white",
+        NEED_VALIDATION: "border-l-orange-500 bg-white",
     }
 
     const badgeColors = {
-        RED: "bg-red-500/20 text-red-200 border-red-500/50",
-        YELLOW: "bg-yellow-500/20 text-yellow-200 border-yellow-500/50",
-        GREEN: "bg-green-500/20 text-green-200 border-green-500/50",
+        RED: "bg-red-100 text-red-700 border-red-200",
+        YELLOW: "bg-yellow-100 text-yellow-700 border-yellow-200",
+        GREEN: "bg-green-100 text-green-700 border-green-200",
+        NEED_VALIDATION: "bg-orange-100 text-orange-700 border-orange-200 animate-pulse",
     }
 
-    const baseClass = "glass-panel p-6 border-l-4 transition-all hover:translate-x-1"
-    const colorClass = isProcessing ? "border-l-slate-500" : (statusColors[vm.urgency] || "border-l-slate-500")
+    const baseClass = "p-6 border-l-4 transition-all hover:translate-x-1 rounded-r-xl shadow-sm border border-brand-brown/10"
+    // Use white background for "cream" theme feel (on top of cream body)
+    const colorClass = isProcessing ? "border-l-brand-brown/50 bg-white/60" : (statusColors[vm.urgency] || "border-l-brand-brown/50 bg-white")
 
     return (
         <div className={`${baseClass} ${colorClass}`}>
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                        <span className="font-mono text-xs text-slate-400">
+                        <span className="font-mono text-xs text-brand-brown/60">
                             {new Date(vm.created_at || Date.now()).toLocaleTimeString()}
                         </span>
                         {isProcessing ? (
-                            <span className="flex items-center gap-1 text-xs font-bold text-blue-400 bg-blue-900/30 px-2 py-1 rounded-full animate-pulse">
+                            <span className="flex items-center gap-1 text-xs font-bold text-brand-brown bg-brand-brown/10 px-2 py-1 rounded-full animate-pulse">
                                 <Loader2 className="w-3 h-3 animate-spin" /> PROCESSING
                             </span>
                         ) : (
@@ -155,15 +169,16 @@ function VoicemailCard({ vm }) {
                         )}
                     </div>
 
-                    <p className="text-slate-200 mb-4 font-medium leading-relaxed">
-                        {vm.transcript || <span className="text-slate-600 italic">Transcribing audio...</span>}
+                    <p className="text-brand-plum mb-4 font-medium leading-relaxed">
+                        {/* We hide the full transcript per user request, only show summary or placeholder */}
+                        {vm.analysis?.summary || <span className="text-brand-brown/40 italic">Processing analysis...</span>}
                     </p>
 
                     {!isProcessing && (
                         <audio
                             controls
-                            className="h-8 w-full max-w-md opacity-70 hover:opacity-100 transition-opacity"
-                            src={`http://localhost:9000/voicemails/${vm.file_path}`}
+                            className="h-8 w-full max-w-md opacity-80 hover:opacity-100 transition-opacity"
+                            src={`${API_URL}/api/voicemails/audio/${vm.file_path}`}
                         />
                     )}
                 </div>
@@ -173,6 +188,7 @@ function VoicemailCard({ vm }) {
                     {!isProcessing && vm.urgency === 'RED' && <Activity className="text-red-500 w-6 h-6" />}
                     {!isProcessing && vm.urgency === 'YELLOW' && <AlertTriangle className="text-yellow-500 w-6 h-6" />}
                     {!isProcessing && vm.urgency === 'GREEN' && <CheckCircle className="text-green-500 w-6 h-6" />}
+                    {!isProcessing && vm.urgency === 'NEED_VALIDATION' && <AlertTriangle className="text-orange-500 w-6 h-6" />}
                 </div>
             </div>
         </div>

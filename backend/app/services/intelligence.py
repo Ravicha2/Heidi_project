@@ -25,7 +25,19 @@ class IntelligenceService:
         transcript = state["transcript"]
         
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an expert medical triage AI. Analyze the voicemail transcript and extract structured data. \nFormat instructions: {format_instructions}"),
+            ("system", """You are an expert medical triage AI. Analyze the voicemail transcript and extract structured data. 
+            
+            Key Guidelines:
+            1. Extract `symptoms` and `appointment_time` if mentioned.
+            2. specific extraction:
+               - `treatment_mode`: 'In-clinic' or 'Telehealth'
+               - `visit_type`: 'First time' or 'Follow-up'
+               - `referral_plan`: true if they mention a referral letter or chronic disease management plan.
+            3. If the user wants an appointment but doesn't specify time or symptoms, add "Appointment Time" or "Symptoms" to `missing_info`.
+            4. If critical info is missing for the intent, set `urgency` to "NEED_VALIDATION" (unless it's clearly an emergency, then RED).
+            5. Otherwise, use RED/YELLOW/GREEN based on medical urgency.
+            
+            Format instructions: {format_instructions}"""),
             ("user", "Transcript: {transcript}")
         ])
         

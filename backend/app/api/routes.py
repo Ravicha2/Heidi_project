@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
 from app.core.config import settings
 from app.db.storage import db
 from app.inngest_client import inngest_client
@@ -60,10 +61,30 @@ async def create_voicemail(file: UploadFile = File(...)):
     
     return {"id": file_id, "status": "queued"}
 
+@router.get("/voicemails/audio/{file_path}")
+async def get_voicemail_audio(file_path: str):
+    try:
+        # Get object from MinIO
+        response = minio_client.get_object(settings.MINIO_BUCKET, file_path)
+        
+        # Generator to stream the file content
+        def iterfile():
+            try:
+                for chunk in response.stream(1024*1024):
+                    yield chunk
+            finally:
+                response.close()
+                response.release_conn()
+
+        return StreamingResponse(iterfile(), media_type="audio/wav")
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Audio file not found")
+
 @router.get("/voicemails")
 async def list_voicemails():
     data = db.list_voicemails()
     # Sort by Urgency (Red first)
     urgency_map = {"RED": 0, "YELLOW": 1, "GREEN": 2, None: 3}
-    sorted_data = sorted(data, key=lambda x: urgency_map.get(x.get('urgency'), 3))
+    # SQLAlchemy objects use dot notation, not .get()
+    sorted_data = sorted(data, key=lambda x: urgency_map.get(x.urgency, 3))
     return sorted_data

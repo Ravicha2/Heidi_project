@@ -5,9 +5,13 @@ from app.core.config import settings
 from app.api.routes import router as api_router
 from app.inngest_client import inngest_client, process_voicemail
 import inngest.fast_api
+from app.db.session import engine, Base
 
 # Logging
 logging.basicConfig(level=logging.INFO)
+
+# Create Tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
