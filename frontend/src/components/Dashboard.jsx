@@ -5,7 +5,7 @@ import { AlertCircle, CheckCircle, Clock, Loader2, Search, ArrowUpDown } from 'l
 import { VoicemailDetail } from './VoicemailDetail'
 import clsx from 'clsx'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
 export function Dashboard() {
     const [selectedVoicemail, setSelectedVoicemail] = useState(null)
@@ -129,7 +129,11 @@ export function Dashboard() {
                                         </td>
                                         <td className="p-4 align-top">
                                             <div className="font-medium line-clamp-2 text-sm">
-                                                {vm.analysis?.summary || <span className="text-brand-brown/60 italic">Processing...</span>}
+                                                {vm.status === 'FAILED' || (vm.status === 'COMPLETED' && !vm.transcript) ? (
+                                                    <span className="text-red-500 font-bold">Extraction Failed</span>
+                                                ) : (
+                                                    vm.analysis?.summary || <span className="text-brand-brown/60 italic">Processing...</span>
+                                                )}
                                             </div>
                                             {vm.status === 'PROCESSING' && (
                                                 <div className="flex items-center gap-1 text-xs text-brand-brown mt-1 animate-pulse">

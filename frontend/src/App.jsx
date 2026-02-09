@@ -7,7 +7,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Navbar } from './components/Navbar'
 import { Dashboard } from './components/Dashboard'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
 function App() {
     return (
@@ -171,7 +171,11 @@ function VoicemailCard({ vm }) {
 
                     <p className="text-brand-plum mb-4 font-medium leading-relaxed">
                         {/* We hide the full transcript per user request, only show summary or placeholder */}
-                        {vm.analysis?.summary || <span className="text-brand-brown/40 italic">Processing analysis...</span>}
+                        {vm.status === 'FAILED' || (vm.status === 'COMPLETED' && !vm.transcript) ? (
+                            <span className="text-red-500 font-bold">Extraction Failed</span>
+                        ) : (
+                            vm.analysis?.summary || <span className="text-brand-brown/40 italic">Processing analysis...</span>
+                        )}
                     </p>
 
                     {!isProcessing && (
