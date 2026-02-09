@@ -21,45 +21,74 @@ minio_client = Minio(
 
 @router.post("/voicemails")
 async def create_voicemail(file: UploadFile = File(...)):
-    file_id = str(uuid.uuid4())
-    filename = f"{file_id}.wav"
-    
-    # Ensure bucket exists
-    if not minio_client.bucket_exists(settings.MINIO_BUCKET):
-        minio_client.make_bucket(settings.MINIO_BUCKET)
-    
-    # Stream upload
+    import logging
+    logger = logging.getLogger(__name__)
+
     try:
-        minio_client.put_object(
-            settings.MINIO_BUCKET, 
-            filename, 
-            file.file, 
-            length=-1, 
-            part_size=10*1024*1024
-        )
+        file_id = str(uuid.uuid4())
+        filename = f"{file_id}.wav"
+        
+        # Log Start
+        logger.info(f"Starting upload for {filename}")
+
+        # Ensure bucket exists
+        if not minio_client.bucket_exists(settings.MINIO_BUCKET):
+            logger.info(f"Bucket {settings.MINIO_BUCKET} not found, creating...")
+            minio_client.make_bucket(settings.MINIO_BUCKET)
+        
+        # Stream upload
+        try:
+            logger.info("Uploading to Storage...")
+            minio_client.put_object(
+                settings.MINIO_BUCKET, 
+                filename, 
+                file.file, 
+                length=-1, 
+                part_size=10*1024*1024
+            )
+            logger.info("Upload successful")
+        except Exception as e:
+            logger.error(f"Storage upload failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Storage upload failed: {str(e)}")
+        
+        # Initial DB Record
+        logger.info("Saving to DB...")
+        try:
+            db.save_voicemail({
+                "id": file_id,
+                "status": "PROCESSING",
+                "file_path": filename,
+                "created_at": str(datetime.now()),
+                "transcript": None,
+                "urgency": None,
+                "category": None
+            })
+            logger.info("DB Save successful")
+        except Exception as e:
+            logger.error(f"DB Save failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"DB Save failed: {str(e)}")
+        
+        # Trigger Inngest Event
+        logger.info("Sending Inngest Event...")
+        try:
+            await inngest_client.send(
+                inngest.Event(
+                    name="voicemail/received", 
+                    data={"file_id": file_id, "file_path": filename}
+                )
+            )
+            logger.info("Inngest Event sent")
+        except Exception as e:
+            logger.error(f"Inngest send failed: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Inngest send failed: {str(e)}")
+        
+        return {"id": file_id, "status": "queued"}
+
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Storage upload failed: {str(e)}")
-    
-    # Initial DB Record
-    db.save_voicemail({
-        "id": file_id,
-        "status": "PROCESSING",
-        "file_path": filename,
-        "created_at": str(datetime.now()),
-        "transcript": None,
-        "urgency": None,
-        "category": None
-    })
-    
-    # Trigger Inngest Event
-    await inngest_client.send(
-        inngest.Event(
-            name="voicemail/received", 
-            data={"file_id": file_id, "file_path": filename}
-        )
-    )
-    
-    return {"id": file_id, "status": "queued"}
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 @router.get("/voicemails/audio/{file_path}")
 async def get_voicemail_audio(file_path: str):
