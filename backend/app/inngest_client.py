@@ -10,7 +10,7 @@ from app.db.storage import db
 # Define Client
 inngest_client = inngest.Inngest(
     app_id="voicemail-app",
-    # is_production=settings.INNGEST_DEV != "1",
+    is_production=settings.INNGEST_DEV != "1",
 )
 
 # MinIO Client (for downloading during processing)
@@ -58,9 +58,9 @@ async def process_voicemail(ctx, step=None):
                         os.unlink(tmp.name)
 
         transcript = await step.run("transcribe_audio", run_transcription)
-        
+        print(transcript)
         analysis = await step.run("analyze_intent_urgency", lambda: intelligence_service.analyze_transcript(transcript))
-        
+        print(analysis)
         # --- Step 3: Determine Booking URL ---
         from app.services.calendly import calendly_service
         
