@@ -15,6 +15,8 @@ class Settings(BaseModel):
     # Inngest
     INNGEST_BASE_URL: str = os.getenv("INNGEST_BASE_URL", "http://inngest:8288")
     INNGEST_DEV: str = os.getenv("INNGEST_DEV", "1")
+    INNGEST_SIGNING_KEY: str = os.getenv("INNGEST_SIGNING_KEY")
+    INNGEST_EVENT_KEY: str = os.getenv("INNGEST_EVENT_KEY")
     
     # OpenAI
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")

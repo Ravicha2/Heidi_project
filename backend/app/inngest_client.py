@@ -11,6 +11,8 @@ from app.db.storage import db
 inngest_client = inngest.Inngest(
     app_id="voicemail-app",
     is_production=settings.INNGEST_DEV != "1",
+    signing_key=settings.INNGEST_SIGNING_KEY,
+    event_key=settings.INNGEST_EVENT_KEY
 )
 
 # MinIO Client (for downloading during processing)
