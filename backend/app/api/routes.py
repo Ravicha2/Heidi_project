@@ -31,10 +31,13 @@ async def create_voicemail(file: UploadFile = File(...)):
         # Log Start
         logger.info(f"Starting upload for {filename}")
 
-        # Ensure bucket exists
-        if not minio_client.bucket_exists(settings.MINIO_BUCKET):
-            logger.info(f"Bucket {settings.MINIO_BUCKET} not found, creating...")
-            minio_client.make_bucket(settings.MINIO_BUCKET)
+        # Ensure bucket exists (Only in Local Dev/MinIO)
+        # In Prod (S3), we assume bucket exists to avoid 'AccessDenied' on ListBuckets
+        if not settings.MINIO_USE_SSL: 
+            if not minio_client.bucket_exists(settings.MINIO_BUCKET):
+                logger.info(f"Bucket {settings.MINIO_BUCKET} not found, creating...")
+                minio_client.make_bucket(settings.MINIO_BUCKET)
+
         
         # Stream upload
         try:
@@ -108,6 +111,15 @@ async def get_voicemail_audio(file_path: str):
         return StreamingResponse(iterfile(), media_type="audio/wav")
     except Exception as e:
         raise HTTPException(status_code=404, detail="Audio file not found")
+
+@router.get("/init-db")
+async def init_db():
+    try:
+        from app.db.session import engine, Base
+        Base.metadata.create_all(bind=engine)
+        return {"status": "success", "message": "Database tables created."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB Init failed: {str(e)}")
 
 @router.get("/voicemails")
 async def list_voicemails():
