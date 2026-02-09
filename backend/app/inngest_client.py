@@ -10,7 +10,7 @@ from app.db.storage import db
 # Define Client
 inngest_client = inngest.Inngest(
     app_id="voicemail-app",
-    is_production=settings.INNGEST_DEV != "1",
+    # is_production=settings.INNGEST_DEV != "1",
 )
 
 # MinIO Client (for downloading during processing)

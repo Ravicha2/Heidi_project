@@ -28,3 +28,5 @@ yarn-error.log*
 minio_data/
 
 *.docx
+*.pem
+*.sh
