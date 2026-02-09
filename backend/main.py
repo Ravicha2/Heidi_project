@@ -16,9 +16,17 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title=settings.PROJECT_NAME)
 
 # CORS
+# CORS
+origins = [
+    "http://localhost:3000",
+    "https://heidi-project-frontend.vercel.app",
+    "https://heidi-project-nu.vercel.app" # Self
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
