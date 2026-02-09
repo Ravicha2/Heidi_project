@@ -23,6 +23,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def read_root():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/docs")
+
 # Mount Routes
 app.include_router(api_router, prefix="/api")
 
