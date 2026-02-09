@@ -27,7 +27,7 @@ class IntelligenceService:
                - `treatment_mode`: 'In-clinic' or 'Telehealth'. Infer based on context (e.g. "come in", "see doctor" -> In-clinic vs "video call" -> Telehealth). Default to 'Telehealth' if unsure but generally assume In-clinic if they ask to see a doctor physically.
                - `visit_type`: 'First time' or 'Follow-up'
                - `referral_plan`: true if they mention a referral letter.
-            3. If critical info is missing, set `urgency` to "NEED_VALIDATION".
+            3. If critical info is missing (e.g. Patient Name, Symptoms), set `urgency` to "NEED_VALIDATION" AND list the missing fields in `missing_info`.
             4. Otherwise, use RED/YELLOW/GREEN based on medical urgency.
             
             Format instructions: {format_instructions}"""),

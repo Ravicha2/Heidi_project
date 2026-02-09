@@ -69,18 +69,33 @@ async def process_voicemail(ctx, step=None):
         
         # --- Step 4: Update Database ---
         async def update_state():
+            # Determine Status and Urgency
+            final_status = "COMPLETED"
+            final_urgency = analysis.get("urgency", "GREEN")
+            missing_info = analysis.get("missing_info", [])
+            
+            # 1. Check Transcript
+            if not transcript:
+                final_status = "FAILED"
+                final_urgency = "RED" # Failed transcription is critical
+            
+            # 2. Check Required Fields / Validation
+            elif final_urgency == "NEED_VALIDATION" or len(missing_info) > 0:
+                final_status = "NEED_VALIDATION"
+                final_urgency = "NEED_VALIDATION" # Ensure frontend badge matches
+            
             # Flatten analysis for simpler DB structure or keep nested
             db.update_voicemail(file_id, {
                 "transcript": transcript,
-                "status": "COMPLETED",
-                "urgency": analysis.get("urgency", "GREEN"),
+                "status": final_status,
+                "urgency": final_urgency,
                 "category": analysis.get("intent", "Unknown"),
                 "analysis": {
                     **analysis,
                     "booking_url": booking_url # Context-aware URL
                 }
             })
-            return "Updated"
+            return f"Updated status to {final_status}"
 
         await step.run("update_db", update_state)
 
