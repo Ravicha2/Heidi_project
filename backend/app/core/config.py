@@ -13,10 +13,10 @@ class Settings(BaseModel):
     MINIO_USE_SSL: bool = os.getenv("MINIO_USE_SSL", "False").lower() == "true"
     
     # Inngest
-    INNGEST_BASE_URL: str = os.getenv("INNGEST_BASE_URL", "http://inngest:8288")
-    INNGEST_DEV: str = os.getenv("INNGEST_DEV", "1")
-    INNGEST_SIGNING_KEY: str = os.getenv("INNGEST_SIGNING_KEY")
-    INNGEST_EVENT_KEY: str = os.getenv("INNGEST_EVENT_KEY")
+    INNGEST_BASE_URL: Optional[str] = os.getenv("INNGEST_BASE_URL")
+    INNGEST_DEV: str = os.getenv("INNGEST_DEV", "0")
+    INNGEST_SIGNING_KEY: Optional[str] = os.getenv("INNGEST_SIGNING_KEY")
+    INNGEST_EVENT_KEY: Optional[str] = os.getenv("INNGEST_EVENT_KEY")
     
     # OpenAI
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
